@@ -20,8 +20,8 @@ class Conv2x2(nn.Module):
         self.conv.bias.data.zero_()
 
     def forward(self, x):
-        x = self.conv(x)
-        return x
+        result = self.conv(x)
+        return result
 
 
 class DWCONV(nn.Module):
@@ -40,8 +40,8 @@ class DWCONV(nn.Module):
         self.depthwise.bias.data.zero_()
 
     def forward(self, x):
-        out = self.depthwise(x)
-        return out
+        result = self.depthwise(x)
+        return result
 
 
 class LPU(nn.Module):
@@ -54,57 +54,8 @@ class LPU(nn.Module):
         self.DWConv = DWCONV(in_channels, out_channels)
 
     def forward(self, x):
-        x = self.DWConv(x) + x
-        return x
-
-
-# class LMHSA(nn.Module):
-#     """
-#     Lightweight Multi-head-self-attention module.
-
-#     Inputs:
-#         Q: [N, C, H, W]
-#         K: [N, C, H / k, W / k]
-#         V: [N, C, H / k, W / k]
-#     Outputs:
-#         X: [N, C, H, W]
-#     """
-#     def __init__(self, channels, d_k, d_v, stride, heads, dropout):
-#         super(LMHSA, self).__init__()
-#         self.dwconv_k = DWCONV(channels, channels, stride = stride)
-#         self.dwconv_v = DWCONV(channels, channels, stride = stride)
-#         self.fc_q = nn.Linear(channels, heads * d_k)
-#         self.fc_k = nn.Linear(channels, heads * d_k)
-#         self.fc_v = nn.Linear(channels, heads * d_v)
-#         self.fc_o = nn.Linear(heads * d_v, channels)
-
-#         self.channels = channels
-#         self.d_k = d_k
-#         self.d_v = d_v
-#         self.stride = stride
-#         self.heads = heads
-#         self.dropout = dropout
-#         self.scaled_factor = self.d_k ** -0.5
-#         self.num_patches = (self.d_k // self.stride) ** 2
-#         self.B = nn.parameter.Parameter(torch.Tensor(self.num_patches, self.d_k // self.stride, self.d_k // self.stride))
-
-#     def forward(self, x):
-#         # 10 x 64 x 56 x 56
-#         batch_size, num_channel, h, w = x.shape
-#         prev_q = x.clone().permute(0, 3, 2, 1).contiguous().view(batch_size, -1, num_channel)
-#         prev_k = self.dwconv_k(x).permute(0, 3, 2, 1).contiguous().view(batch_size, -1, num_channel)
-#         prev_v = self.dwconv_v(x).permute(0, 3, 2, 1).contiguous().view(batch_size, -1, num_channel)
-
-#         q = self.fc_q(prev_q).view(batch_size, -1, self.d_k)
-#         k = self.fc_k(prev_k).view(batch_size, -1, self.d_k)
-#         v = self.fc_v(prev_v).view(batch_size, -1, self.d_k)
-
-#         attn = torch.einsum('... i d, ... j d -> ... i j', q, k) * self.scaled_factor
-#         attn = torch.softmax(attn, dim = -1)
-
-#         result = torch.matmul(attn, v).view(batch_size, -1, self.heads * self.d_k)
-#         out = self.fc_o(result).view(batch_size, num_channel, h, w)
-#         return out
+        result = self.DWConv(x) + x
+        return result
 
 
 class LMHSA(nn.Module):
@@ -169,7 +120,9 @@ class LMHSA(nn.Module):
         result = torch.matmul(attn, v).permute(0, 2, 1, 3)
         result = result.contiguous().view(b, h * w, self.heads * self.d_v)
         result = self.fc_o(result).view(b, self.channels, h, w)
+        result = result + x
         return result
+
 
 class IRFFN(nn.Module):
     """
@@ -196,8 +149,8 @@ class IRFFN(nn.Module):
         )
 
     def forward(self, x):
-        x = x + self.conv2(self.dwconv(self.conv1(x)))
-        return x
+        result = x + self.conv2(self.dwconv(self.conv1(x)))
+        return result
 
 
 class Patch_Aggregate(nn.Module):
@@ -210,9 +163,9 @@ class Patch_Aggregate(nn.Module):
     (2x enlargement of dimension).
 
     Input:
-        - x: (N, C, H, W)
+        - x: (N, In_C, H, W)
     Output:
-        - x: (N, C * 2, H / 2, W / 2)
+        - x: (N, Out_C, H / 2, W / 2)
     """
     def __init__(self, in_channels, out_channels = None):
         super(Patch_Aggregate, self).__init__()
@@ -234,8 +187,8 @@ class Patch_Aggregate(nn.Module):
     def forward(self, x):
         x = self.conv(x)
         _, c, h, w = x.size()
-        x = nn.LayerNorm((c, h, w))(x)
-        return x
+        result = nn.LayerNorm((c, h, w))(x)
+        return result
 
 
 class CMTStem(nn.Module):
@@ -249,7 +202,7 @@ class CMTStem(nn.Module):
     Input:
         - x: (N, 3, 256, 256)
     Output:
-        - x_cmt: (N, 32, 128, 128)
+        - result: (N, 32, 128, 128)
     """
     def __init__(self, in_channels, out_channels):
         super().__init__()
@@ -275,16 +228,16 @@ class CMTStem(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
-        x = self.conv1(x) # 32x128x128
+        x = self.conv1(x)
         x = self.gelu1(x)
         x = self.bn1(x)
-        x = self.conv2(x) # 32x128x128
+        x = self.conv2(x)
         x = self.gelu2(x)
         x = self.bn2(x)
-        x = self.conv3(x) # 32x128x128
+        x = self.conv3(x)
         x = self.gelu3(x)
-        x_cmt = self.bn3(x)
-        return x_cmt
+        result = self.bn3(x)
+        return result
 
 
 class CMTBlock(nn.Module):
@@ -305,22 +258,3 @@ class CMTBlock(nn.Module):
         x = self.lmhsa(x)
         x = self.irffn(x)
         return x
-
-
-# img = torch.randn(10, 3, 224, 224)
-# stem = CMTStem(3, 32)
-# patch1 = Patch_Aggregate(32, 46)
-# lpu = LPU(46, 46)
-# model = LMHSA(56, 46, 512, 512, 8, 8, 0)
-# irffn = IRFFN(46, 4)
-
-# x = stem(img)
-# print(x.shape)
-# x = patch1(x)
-# print(x.shape)
-# x = lpu(x)
-# print(x.shape)
-# x = model(x)
-# print(x.shape)
-# x = irffn(x)
-# print(x.shape)

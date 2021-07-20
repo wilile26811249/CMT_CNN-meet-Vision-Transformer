@@ -17,7 +17,8 @@ class CMT(nn.Module):
     ):
         super(CMT, self).__init__()
 
-        size = [56, 28, 14, 7]
+        # Image size for each stage
+        size = [img_size // 4, img_size // 8, img_size // 16, img_size // 32]
 
         # Stem layer
         self.stem = CMTStem(in_channels, stem_channel)
@@ -29,7 +30,7 @@ class CMT(nn.Module):
         self.patch4 = Patch_Aggregate(patch_channel[2], patch_channel[3])
 
         # CMT Block Layer
-        cmt1 = []
+        stage1 = []
         for _ in range(block_layer[0]):
             cmt_layer = CMTBlock(
                     img_size = size[0],
@@ -40,10 +41,10 @@ class CMT(nn.Module):
                     R = R,
                     in_channels = patch_channel[0]
             )
-            cmt1.append(cmt_layer)
-        self.cmt1 = nn.Sequential(*cmt1)
+            stage1.append(cmt_layer)
+        self.stage1 = nn.Sequential(*stage1)
 
-        cmt2 = []
+        stage2 = []
         for _ in range(block_layer[1]):
             cmt_layer = CMTBlock(
                     img_size = size[1],
@@ -54,10 +55,10 @@ class CMT(nn.Module):
                 R = R,
                 in_channels = patch_channel[1]
             )
-            cmt2.append(cmt_layer)
-        self.cmt2 = nn.Sequential(*cmt2)
+            stage2.append(cmt_layer)
+        self.stage2 = nn.Sequential(*stage2)
 
-        cmt3 = []
+        stage3 = []
         for _ in range(block_layer[2]):
             cmt_layer = CMTBlock(
                 img_size = size[2],
@@ -68,10 +69,10 @@ class CMT(nn.Module):
                 R = R,
                 in_channels = patch_channel[2]
             )
-            cmt3.append(cmt_layer)
-        self.cmt3 = nn.Sequential(*cmt3)
+            stage3.append(cmt_layer)
+        self.stage3 = nn.Sequential(*stage3)
 
-        cmt4 = []
+        stage4 = []
         for _ in range(block_layer[3]):
             cmt_layer = CMTBlock(
                 img_size = size[3],
@@ -82,8 +83,8 @@ class CMT(nn.Module):
                 R = R,
                 in_channels = patch_channel[3]
             )
-            cmt4.append(cmt_layer)
-        self.cmt4 = nn.Sequential(*cmt4)
+            stage4.append(cmt_layer)
+        self.stage4 = nn.Sequential(*stage4)
 
         # Global Average Pooling
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
@@ -102,81 +103,89 @@ class CMT(nn.Module):
         x = self.stem(x)
 
         x = self.patch1(x)
-        x = self.cmt1(x)
-        print(f"After cmt1 size: {x.shape}")
+        x = self.stage1(x)
 
         x = self.patch2(x)
-        x = self.cmt2(x)
-        print(f"After cmt2 size: {x.shape}")
+        x = self.stage2(x)
 
         x = self.patch3(x)
-        x = self.cmt3(x)
-        print(f"After cmt3 size: {x.shape}")
+        x = self.stage3(x)
 
         x = self.patch4(x)
-        x = self.cmt4(x)
-        print(f"After cmt4 size: {x.shape}")
+        x = self.stage4(x)
 
         x = self.avg_pool(x)
         x = torch.flatten(x, 1)
+
         x = self.fc(x)
-        x = self.classifier(x)
-        print(f"After classifier size: {x.shape}")
-        return x
+        logit = self.classifier(x)
+        return logit
 
 
-img = torch.rand(2, 3, 224, 224)
-
-CMT_Ti = CMT(
-    in_channels = 3,
-    stem_channel = 16,
-    cmt_channel = [46, 92, 184, 368],
-    patch_channel = [46, 92, 184, 368],
-    block_layer = [2, 2, 10, 2],
-    R = 3.6,
-    img_size = 224,
-    num_class = 10
-)
-
-CMT_XS = CMT(
-    in_channels = 3,
-    stem_channel = 16,
-    cmt_channel = [52, 104, 208, 416],
-    patch_channel = [52, 104, 208, 416],
-    block_layer = [3, 3, 12, 3],
-    R = 3.8,
-    img_size = 224,
-    num_class = 10
-)
-
-CMT_S = CMT(
-    in_channels = 3,
-    stem_channel = 32,
-    cmt_channel = [64, 128, 256, 512],
-    patch_channel = [64, 128, 256, 512],
-    block_layer = [3, 3, 16, 3],
-    R = 4,
-    img_size = 224,
-    num_class = 10
-)
-
-CMT_B = CMT(
-    in_channels = 3,
-    stem_channel = 38,
-    cmt_channel = [76, 152, 304, 608],
-    patch_channel = [76, 152, 304, 608],
-    block_layer = [4, 4, 20, 4],
-    R = 4,
-    img_size = 224,
-    num_class = 10
-)
+def CMT_Ti(img_size = 224, num_class = 1000):
+    model = CMT(
+        in_channels = 3,
+        stem_channel = 16,
+        cmt_channel = [46, 92, 184, 368],
+        patch_channel = [46, 92, 184, 368],
+        block_layer = [2, 2, 10, 2],
+        R = 3.6,
+        img_size = img_size,
+        num_class = num_class
+    )
+    return model
 
 
-# output = CMT_Ti(img)
-# output = CMT_XS(img)
-# output = CMT_S(img)
-# output = CMT_B(img)
-print(f"{sum(p.numel() for p in CMT_Ti.parameters() if p.requires_grad) / 1e6 : .2f}M")
-print(f"{sum(p.numel() for p in CMT_XS.parameters() if p.requires_grad) / 1e6 : .2f}M")
-print(f"{sum(p.numel() for p in CMT_S.parameters() if p.requires_grad) / 1e6 : .2f}M")
-print(f"{sum(p.numel() for p in CMT_B.parameters() if p.requires_grad) / 1e6 : .2f}M")
+def CMT_XS(img_size = 224, num_class = 1000):
+    model = CMT(
+        in_channels = 3,
+        stem_channel = 16,
+        cmt_channel = [52, 104, 208, 416],
+        patch_channel = [52, 104, 208, 416],
+        block_layer = [3, 3, 12, 3],
+        R = 3.8,
+        img_size = img_size,
+        num_class = num_class
+    )
+    return model
+
+def CMT_S(img_size = 224, num_class = 1000):
+    model = CMT(
+        in_channels = 3,
+        stem_channel = 32,
+        cmt_channel = [64, 128, 256, 512],
+        patch_channel = [64, 128, 256, 512],
+        block_layer = [3, 3, 16, 3],
+        R = 4,
+        img_size = img_size,
+        num_class = num_class
+    )
+    return model
+
+def CMT_B(img_size = 224, num_class = 1000):
+    model = CMT(
+        in_channels = 3,
+        stem_channel = 38,
+        cmt_channel = [76, 152, 304, 608],
+        patch_channel = [76, 152, 304, 608],
+        block_layer = [4, 4, 20, 4],
+        R = 4,
+        img_size = img_size,
+        num_class = num_class
+    )
+    return model
+
+
+def test():
+    calc_param = lambda net: sum(p.numel() for p in net.parameters() if p.requires_grad)
+    img = torch.rand(2, 3, 224, 224)
+    cmt_ti = CMT_Ti()
+    cmt_xs = CMT_XS()
+    cmt_x = CMT_S()
+    cmt_b = CMT_B()
+    logit = cmt_b(img)
+    print(logit.size())
+    print(f"CMT_Ti param: {calc_param(cmt_ti) / 1e6 : .2f} M")
+    print(f"CMT_XS param: {calc_param(cmt_xs) / 1e6 : .2f} M")
+    print(f"CMT_X  param: {calc_param(cmt_x) / 1e6 : .2f} M")
+    print(f"CMT_B  param: {calc_param(cmt_b) / 1e6 : .2f} M")
