@@ -10,6 +10,8 @@ A PyTorch implementation of CMT based on paper [CMT: Convolutional Neural Networ
 ![Network Architecture image from the paper](./fig/cmt_variant.png)
 <p align=center><b>CMT variants structure overview</b></p>
 
+---
+## Number of Parameters
 |Model  |  # Params of the paper    | # Parames of this implement |
 |-------|:-------------------------:|:---------------------------:|
 |CMT-Ti |         9.49 M            |         10.32 M             |
