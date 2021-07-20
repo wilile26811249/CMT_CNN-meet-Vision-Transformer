@@ -64,8 +64,8 @@ class LMHSA(nn.Module):
 
     Inputs:
         Q: [N, C, H, W]
-        K: [N, C, H / k, W / k]
-        V: [N, C, H / k, W / k]
+        K: [N, C, H / stride, W / stride]
+        V: [N, C, H / stride, W / stride]
     Outputs:
         X: [N, C, H, W]
     """
@@ -163,9 +163,9 @@ class Patch_Aggregate(nn.Module):
     (2x enlargement of dimension).
 
     Input:
-        - x: (N, In_C, H, W)
+        - x: (B, In_C, H, W)
     Output:
-        - x: (N, Out_C, H / 2, W / 2)
+        - x: (B, Out_C, H / 2, W / 2)
     """
     def __init__(self, in_channels, out_channels = None):
         super(Patch_Aggregate, self).__init__()
@@ -200,9 +200,9 @@ class CMTStem(nn.Module):
     Then past throught two 1x1 convolution for better local information.
 
     Input:
-        - x: (N, 3, 256, 256)
+        - x: (B, 3, H, W)
     Output:
-        - result: (N, 32, 128, 128)
+        - result: (B, 32, H / 2, W / 2)
     """
     def __init__(self, in_channels, out_channels):
         super().__init__()
