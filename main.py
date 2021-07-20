@@ -36,7 +36,7 @@ def train_epoch(epoch, net, train_loader, val_loader , criterion, optimizer, sch
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        scheduler.step()
+    scheduler.step()
 
 
     # Validation model
