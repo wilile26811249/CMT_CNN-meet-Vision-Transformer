@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from cmt_module import CMTStem, Patch_Aggregate, CMTBlock
+from .cmt_module import CMTStem, Patch_Aggregate, CMTBlock
 
 
 class CMT(nn.Module):
