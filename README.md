@@ -42,6 +42,11 @@ optional arguments:
 
 ---
 
+## TODOs
+- [x] Train on the cifar-10 dataset (Due to the computation limit).
+
+---
+
 ## Citation
 
     @misc{guo2021cmt,
