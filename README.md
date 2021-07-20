@@ -12,12 +12,12 @@ A PyTorch implementation of CMT based on paper [CMT: Convolutional Neural Networ
 
 ---
 ## Number of Parameters
-|Model  |  # Params of the paper    | # Parames of this implement |
-|-------|:-------------------------:|:---------------------------:|
-|CMT-Ti |         9.49 M            |         10.32 M             |
-|CMT-XS |        15.24 M            |         16.40 M             |
-|CMT-S  |        25.14 M            |         27.38 M             |
-|CMT-B  |        45.72 M            |         47.06 M             |
+|Model  |  # Params of the paper    | # Parames of this implement | MACs(G) |
+|-------|:-------------------------:|:---------------------------:|:-------:|
+|CMT-Ti |         9.49 M            |         10.32 M             |  1.21   |
+|CMT-XS |        15.24 M            |         16.40 M             |  2.04   |
+|CMT-S  |        25.14 M            |         27.38 M             |  3.88   |
+|CMT-B  |        45.72 M            |         47.06 M             |  6.83   |
 
 ---
 
