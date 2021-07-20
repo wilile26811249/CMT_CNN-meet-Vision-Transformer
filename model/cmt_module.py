@@ -94,7 +94,8 @@ class LMHSA(nn.Module):
 
         # Reshape
         x_reshape = x.view(b, c, h * w).permute(0, 2, 1)
-        x_reshape = nn.LayerNorm(c)(x_reshape)
+        # x_reshape = nn.LayerNorm(c).cuda()(x_reshape)
+        x_reshape = torch.nn.functional.layer_norm(x_reshape, (b, h * w, c))
 
         # Get q, k, v
         q = self.fc_q(x_reshape)
@@ -187,7 +188,8 @@ class Patch_Aggregate(nn.Module):
     def forward(self, x):
         x = self.conv(x)
         _, c, h, w = x.size()
-        result = nn.LayerNorm((c, h, w))(x)
+        # result = nn.LayerNorm((c, h, w)).cuda()(x)
+        result = torch.nn.functional.layer_norm(x, (c, h, w))
         return result
 
 
