@@ -42,8 +42,21 @@ optional arguments:
 
 ---
 
+## Experiments Results (Cifar-10)
+
+![Accuracy of Cifar10](./fig/cifar10_result.png)
+
+![Loss of Cifar10](./fig/cifar10_result_loss.png)
+
+|Model  |  Dataset | Learning Rate |   Optimizer  |  Weight decay  |   Acc@1  |  Acc@5  |
+|-------|:---:|:--------:|:--------:|:-------:|:--------:|:-------:|
+|CMT-Ti |  Cifar10 |  6e-5        |    AdamW     |  1e-5          |  88.16%  |  99.49% |
+
+
+---
+
 ## TODOs
-- [x] Train on the cifar-10 dataset (Due to the computation limit).
+- [ ] Train on the cifar-10 dataset (Due to the computation limit).
 
 ---
 
