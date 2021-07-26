@@ -48,9 +48,9 @@ optional arguments:
 
 ![Loss of Cifar10](./fig/cifar10_result_loss.png)
 
-|Model  |  Dataset | Learning Rate |   Optimizer  |  Weight decay  |   Acc@1  |  Acc@5  |
-|-------|:---:|:--------:|:--------:|:-------:|:--------:|:-------:|
-|CMT-Ti |  Cifar10 |  6e-5        |    AdamW     |  1e-5          |  88.16%  |  99.49% |
+|Model  |  Dataset | Learning Rate |   Optimizer |  Weight decay  |   Acc@1  |  Acc@5  |
+|-------|:--------:|:--------:|:--------:|:-------:|:--------:|:-------:|
+|CMT-Ti |  Cifar10 |  6e-5    |  AdamW   |  1e-5   |  88.16%  |  99.49% |
 
 
 ---
