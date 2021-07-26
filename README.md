@@ -49,7 +49,7 @@ optional arguments:
 ![Loss of Cifar10](./fig/cifar10_result_loss.png)
 
 
-|Model  |  Dataset | Learning Rate |   Optimizer |  Weight decay | LR Scheduler |   Acc@1  |  Acc@5  |
+|Model  |  Dataset | Learning Rate |   LR Scheduler | Optimizer |  Weight decay |   Acc@1  |  Acc@5  |
 |-------|:--------:|:------:|:----:|:--------:|:-------:|:--------:|:-------:|
 |CMT-Ti |  Cifar10 |  6e-5  | Cosine LR|  AdamW   |  1e-5   |  88.16%  |  99.49% |
 
