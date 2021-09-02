@@ -13,11 +13,6 @@ class Conv2x2(nn.Module):
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size = 2,
             stride = stride, padding = 0, bias = True
         )
-        self.init_weight()
-
-    def init_weight(self):
-        nn.init.kaiming_normal_(self.conv.weight)
-        self.conv.bias.data.zero_()
 
     def forward(self, x):
         result = self.conv(x)
@@ -33,11 +28,6 @@ class DWCONV(nn.Module):
         self.depthwise = nn.Conv2d(in_channels, out_channels, kernel_size = 3,
             stride = stride, padding = 1, groups = in_channels, bias = True
         )
-        self.init_weight()
-
-    def init_weight(self):
-        nn.init.kaiming_normal_(self.depthwise.weight)
-        self.depthwise.bias.data.zero_()
 
     def forward(self, x):
         result = self.depthwise(x)
