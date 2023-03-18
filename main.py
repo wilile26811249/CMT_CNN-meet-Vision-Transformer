@@ -22,7 +22,8 @@ def train_epoch(epoch, net, train_loader, val_loader , criterion, optimizer, sch
     for _, (inputs, targets) in enumerate(tqdm(train_loader)):
         inputs = inputs.to(device)
         targets = targets.to(device)
-
+        
+        optimizer.zero_grad()
         # Forward pass
         outputs = net(inputs)
         loss = criterion(outputs, targets)
@@ -33,7 +34,6 @@ def train_epoch(epoch, net, train_loader, val_loader , criterion, optimizer, sch
         train_acc5.update(acc5.item(), inputs.size(0))
 
         # Backward and optimize
-        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
     scheduler.step()
